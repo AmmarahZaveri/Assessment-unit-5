@@ -1,15 +1,21 @@
-if (process.env.NODE_ENV === 'development') {
-    require('dotenv').config();
-    
-  }
-const Sequelize = require ('sequelize');
+//!step 1
+require('dotenv').config()
+const Sequelize = require('sequelize')
 
-var sequelize = new Sequelize(process.env.DATABASE_URL, {
+let {CONNECTION_STRING} = process.env
+//////////////////////////////////////////////////
+const sequelize = new Sequelize (CONNECTION_STRING, 
+    //!step 2
+    {
     dialect: 'postgres',
     dialectOptions: {
-      ssl: true
+        ssl: {
+            rejectUnauthorized: false
+        }
     }
-  });
+  })
+
+
 module.exports = {
     seed: (req, res) => {
         sequelize.query(`
@@ -21,7 +27,11 @@ module.exports = {
                 name varchar
             );
 
-            *****YOUR CODE HERE*****
+            create table cities (
+                city_id Serial Primary Key,
+                country_id serial primary key, 
+                name varchar
+            );
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -223,5 +233,29 @@ module.exports = {
             console.log('DB seeded!')
             res.sendStatus(200)
         }).catch(err => console.log('error seeding DB', err))
-    }
+    },
+
+    createCity : (req,res) =>{
+        let {name, rating, countryId} = req.body
+sequelize.query(`
+        insert into cities(name, rating, country_id)
+
+        values('${name}',${rating},${countryId});
+        `).then(dbres => {
+            res.status(200).send(dbres[0])
+        })
+
+    }, 
+
+
+    deleteCity : (req,res) =>{
+        let {id: city_id} = req.params
+        console.log(req.params);
+        sequelize.query(`
+        Delete from cities
+        wherecity_id = ${city_id}
+        `).then(dbres => {
+            res.status(200).send(dbres[0])
+        })
+    }, 
 }
