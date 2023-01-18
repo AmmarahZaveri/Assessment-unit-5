@@ -28,10 +28,13 @@ module.exports = {
             );
 
             create table cities (
-                city_id Serial Primary Key,
-                country_id serial primary key, 
-                name varchar
+                city_id SERIAL PRIMARY KEY,
+                name varchar(50),
+                rating integer,
+                country_id integer REFERENCES countries(country_id)
             );
+            
+          
 
             insert into countries (name)
             values ('Afghanistan'),
@@ -229,7 +232,8 @@ module.exports = {
             ('Yemen'),
             ('Zambia'),
             ('Zimbabwe');
-        `).then(() => {
+        `)
+        .then(() => {
             console.log('DB seeded!')
             res.sendStatus(200)
         }).catch(err => console.log('error seeding DB', err))
@@ -241,20 +245,44 @@ sequelize.query(`
         insert into cities(name, rating, country_id)
 
         values('${name}',${rating},${countryId});
-        `).then(dbres => {
+        `)
+        .then(dbres => {
             res.status(200).send(dbres[0])
         })
 
     }, 
+    ///////////////////////////////////////
+    getCountries: (req, res) => {
+        sequelize.query(`
+        select * from countries;
+        `)
+        .then((dbRes) => {
+            res.status(200).send(dbRes[0])
+         })
+    },
+//////////////////////////////////////////
 
+getCities: (req, res)=> {
+    sequelize.query(`
+        select city.city_id, city.name AS city, city.rating, country.country_id, country.name AS country
+        join countries as a conounty
+        on city.country_id = country.country_id
+        order by city.rating desc;
+    `)
+    .then((dbRes) => {
+        res.status(200).send(dbRes[0])
+     })
+    
+},
 
     deleteCity : (req,res) =>{
         let {id: city_id} = req.params
         console.log(req.params);
         sequelize.query(`
-        Delete from cities
-        wherecity_id = ${city_id}
-        `).then(dbres => {
+        delete from cities
+        where city_id = ${city_id}
+        `)
+        .then(dbres => {
             res.status(200).send(dbres[0])
         })
     }, 
