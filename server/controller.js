@@ -265,7 +265,7 @@ sequelize.query(`
 getCities: (req, res)=> {
     sequelize.query(`
         select city.city_id, city.name AS city, city.rating, country.country_id, country.name AS country
-        join countries as a conounty
+        join countries as country
         on city.country_id = country.country_id
         order by city.rating desc;
     `)
